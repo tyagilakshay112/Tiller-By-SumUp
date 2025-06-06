@@ -1,4 +1,4 @@
---Calculating Revenue related KPIs for restaurant 4151
+--Calculating Revenue related KPIs
 --customer_per_head 
 SELECT
     ROUND(SUM(od.m_cached_payed) / NULLIF(SUM(od.m_nb_customer), 0), 2) AS customer_spend_per_head,

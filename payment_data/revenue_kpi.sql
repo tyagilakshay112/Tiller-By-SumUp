@@ -1,4 +1,4 @@
---Calculating Revenue related KPIs for restaurant 4151
+--Calculating Revenue related KPIs 
 --customer_per_head 
 SELECT
     ROUND(SUM(od.m_cached_payed) / NULLIF(SUM(od.m_nb_customer), 0), 2) AS customer_spend_per_head,
@@ -8,8 +8,7 @@ FROM
 JOIN
     `tiller-by-sumup-461710.Tiller.store_data` sd ON od.id_store = sd.id_store
 WHERE
-    od.id_store = 4151
-    AND od.date_closed IS NOT NULL
+    od.date_closed IS NOT NULL
     AND od.m_cached_payed IS NOT NULL
     AND od.m_cached_payed > 0
     AND od.m_nb_customer IS NOT NULL
@@ -24,9 +23,7 @@ FROM
   `tiller-by-sumup-461710.Tiller.cleaned_payment_data` pd
 JOIN
   `tiller-by-sumup-461710.Tiller.order_data_Kcleaned` od
-  ON pd.id_order = od.id_order
-WHERE
-  od.id_store = 4151;
+  ON pd.id_order = od.id_order;
 
 
 --Calculating Table Turnover Time (avg table turnover duration) for 4151 > how long tables are occupied on average - shorter times usually mean higher efficiency, as tables are freed up for new guests more quickly.
@@ -36,17 +33,14 @@ SELECT
   'minutes' AS unit
 FROM
   `tiller-by-sumup-461710.Tiller.order_data_Kcleaned` od
-WHERE
-  od.id_store = 4151
-  AND od.date_opened IS NOT NULL
+WHERE od.date_opened IS NOT NULL
   AND od.date_closed IS NOT NULL
   AND TIMESTAMP_DIFF(od.date_closed, od.date_opened, SECOND) >= 60;
 
 
 --Nb of customers served
 SELECT SUM(m_nb_customer) AS total_customers
-FROM `tiller-by-sumup-461710.Tiller.order_data_Kcleaned`
-WHERE id_store = 4151;
+FROM `tiller-by-sumup-461710.Tiller.order_data_Kcleaned`;
 
 --Revenue per day
 SELECT
@@ -58,8 +52,6 @@ JOIN
   `tiller-by-sumup-461710.Tiller.order_data_Kcleaned` od
 ON
   pd.id_order = od.id_order
-WHERE
-  od.id_store = 4151
 GROUP BY
   payment_date
 ORDER BY
@@ -77,8 +69,6 @@ JOIN
   `tiller-by-sumup-461710.Tiller.order_data_Kcleaned` od
 ON
   pd.id_order = od.id_order
-WHERE
-  od.id_store = 4151
 GROUP BY
   payment_date,
   payment_hour

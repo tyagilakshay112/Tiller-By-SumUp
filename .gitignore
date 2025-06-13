@@ -1,1 +1,42 @@
-.gitattributes
+import pandas as pd
+from prophet import Prophet
+
+df = pd.read_csv('/content/pycaret_file.csv')
+df_prophet = df[['date_opened', 'm_cached_payed']].rename(columns={'date_opened': 'ds', 'm_cached_payed': 'y'})
+
+# Remove timezone information if present
+df_prophet['ds'] = pd.to_datetime(df_prophet['ds'])
+df_prophet['ds'] = df_prophet['ds'].dt.tz_localize(None)
+df_prophet['quantity'] = df['quantity']
+df_prophet = df_prophet.set_index('ds').resample('H').mean().reset_index()  # Example: hourly resampling
+df_prophet = df_prophet.set_index('ds')[['y', 'quantity']].resample('H').mean().reset_index()
+df_prophet['quantity'] = df_prophet['quantity'].ffill()
+
+holidays_df = df[df['holidays'] != 'Regular Day'][['date_opened', 'holidays']]
+holidays_df = holidays_df.rename(columns={'date_opened': 'ds', 'holidays': 'holiday'})
+
+model = Prophet(
+    yearly_seasonality=True,   # Capture annual trends
+    weekly_seasonality=True,   # Weekly patterns
+    daily_seasonality=False,   # Disable if hourly data is sparse
+    holidays=holidays_df
+)
+
+model.add_regressor('quantity')
+
+model.fit(df_prophet)
+
+future = model.make_future_dataframe(periods=3, freq='Y')  # Forecast 30 days ahead
+
+# Find the last known 'quantity' value
+last_quantity = df_prophet['quantity'].iloc[-1]
+
+# Add the 'quantity' column to the future dataframe
+future['quantity'] = last_quantity
+
+forecast = model.predict(future)
+
+fig1 = model.plot(forecast)
+fig2 = model.plot_components(forecast)
+
+
